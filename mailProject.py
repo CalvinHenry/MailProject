@@ -16,25 +16,6 @@ def intializeGlobals():
     readServer = imaplib.IMAP4_SSL\
                  ('imap.gmail.com',993)
     readServer.login(username,password)
-
-    sucess, mailboxes = readServer.list();
-    sucess,inbox = readServer.select('PhoneStuff')
-    #Note to self, make sure you test that this will not get mail from the inbox, just PhoneStuff
-    sucess, dta = readServer.search(None, '(UNSEEN)')
-    print sucess
-    if sucess == 'OK' or  len(dta) < 1:
-        print len(dta)
-        for num in dta[0].split(' '):
-            
-            try :
-                sucess, data = readServer.fetch(num,'(RFC822)')
-                text = data[0][1]
-                print parseString(text)
-                typ, data = readServer.store(num,'+FLAGS','\\Seen')
-            except:
-                print 'No Unread Email'
-            
-            
     else:
         print "No read emails"
     #numOfMessages = dta[0][1]
@@ -56,24 +37,47 @@ def sendEmail(recipient, subject, email):
         
     toaddrs = recipient
     msg = email
+    server.sendmail(fromaddr, toaddrs, msg)
+    return;
+
+def writeServerLogin(localUsername, localPassword):
     server.ehlo()
     server.starttls()
-    server.login(username, password)
-    server.sendmail(fromaddr, toaddrs, msg)
+    server.login(localUsername, localPassword)
+    return;
+
+def writeServerLogout():
     server.quit()
+    return;
+def readServerLogin(localUsername, localPassword):
+    readerServer.login(localUsername, localPassword)
+    return;
+def readServerLogout():
+    readServer.close()
+    readServer.logout()
     return;
 
 def checkMail():
-
     
-    
-   
-    
+    sucess, mailboxes = readServer.list();
+    sucess,inbox = readServer.select('PhoneStuff')
+    #Note to self, make sure you test that this will not get mail from the inbox, just PhoneStuff
+    sucess, dta = readServer.search(None, '(UNSEEN)')
+    if sucess == 'OK' or  len(dta) < 1:
+        print len(dta)
+        for num in dta[0].split(' '):
+            try :
+                sucess, data = readServer.fetch(num,'(RFC822)')
+                text = data[0][1]
+                print parseString(text)
+                typ, data = readServer.store(num,'+FLAGS','\\Seen')
+            except:
+                print 'No Unread Email'    
     return;
 
 
 def parseString(inFrom):
-    print(inFrom);
+    #print(inFrom);
     front = 'Content-Location: text_0.txt'
     backExtraConst = -2;
     frontExtraConst = 4
@@ -84,6 +88,8 @@ def parseString(inFrom):
 
     return parse;
 
+def interpretMessage(message):
+    return;
 
 intializeGlobals()
 parser = argparse.ArgumentParser(description='Process some integers.')
